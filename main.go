@@ -1,6 +1,11 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"log"
+	"net/http"
 	"time"
 ) 
 
@@ -27,3 +32,22 @@ var tasks = []Task{{
 	Content: "Cタスク",
 	DueDate: time.Now(),
 }}
+
+func main() {
+	handler1 := func(w http.ResponseWriter, r *http.Request) {
+		var buf bytes.Buffer
+		enc := json.NewEncoder(&buf)
+		if err := enc.Encode(&tasks); err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Println(buf.String())
+
+		_, err := fmt.Fprint(w, buf.String())
+		if err != nil {
+			return 
+		}
+	}
+
+	http.HandleFunc("/tasks", handler1)
+	http.ListenAndServe(":8080", nil)
+}
